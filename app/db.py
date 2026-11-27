@@ -70,3 +70,11 @@ def delete_habit(conn, habit_id):
     """Delete a habit (its check-ins go with it). Returns False if it did not exist."""
     row = conn.execute('DELETE FROM habits WHERE id = %s RETURNING id', (habit_id,)).fetchone()
     return row is not None
+
+
+def check_dates_by_habit(conn):
+    """Map each habit id to the set of dates it was checked."""
+    dates = {}
+    for row in conn.execute('SELECT habit_id, check_date FROM check_ins').fetchall():
+        dates.setdefault(row['habit_id'], set()).add(row['check_date'])
+    return dates

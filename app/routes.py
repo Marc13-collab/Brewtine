@@ -1,6 +1,6 @@
 from flask import Blueprint, current_app, jsonify, render_template, request
 
-from . import db
+from . import db, stats
 from .clock import today_manila
 
 bp = Blueprint('main', __name__)
@@ -33,8 +33,14 @@ def index():
 
 @bp.get('/api/habits')
 def get_habits():
+    today = today_manila()
     with db.get_conn(_url()) as conn:
-        habits = db.list_habits(conn, today_manila())
+        habits = db.list_habits(conn, today)
+        dates = db.check_dates_by_habit(conn)
+    for habit in habits:
+        habit_dates = dates.get(habit['id'], set())
+        habit['streak'] = stats.compute_streak(habit_dates, today)
+        habit['week'] = stats.week_progress(habit_dates, today, habit['weekly_target'])
     return jsonify(habits), 200
 
 

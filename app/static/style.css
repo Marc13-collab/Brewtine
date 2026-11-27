@@ -16,6 +16,7 @@ button { font: inherit; padding: 0.6rem 0.9rem; cursor: pointer; }
 #habit-list { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; gap: 0.75rem; }
 .habit { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.75rem; border: 1px solid #ccc; border-radius: 0.5rem; }
 .habit-name { flex: 1 1 10rem; font-weight: 600; overflow-wrap: anywhere; }
+.habit-stats { flex: 1 1 100%; margin: 0; }
 .habit.done .check { font-weight: 600; }
 
 .error { margin: 0.5rem 0 0; color: #b5543a; }

@@ -64,7 +64,13 @@ function renderHabit(h) {
   del.textContent = 'Delete';
   del.addEventListener('click', () => deleteHabit(h.id));
 
-  li.append(name, check, del);
+  const stats = document.createElement('p');
+  stats.className = 'habit-stats';
+  const days = h.streak === 1 ? 'day' : 'days';
+  stats.textContent =
+    `Streak: ${h.streak} ${days} · This week: ${h.week.count}/${h.week.target} (${h.week.percent}%)`;
+
+  li.append(name, check, del, stats);
   return li;
 }
 

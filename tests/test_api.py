@@ -87,3 +87,25 @@ def test_delete_204_and_cascades(client, conn):
 @pytest.mark.parametrize('hid', ['999999', '99999999999'])
 def test_delete_unknown_404(client, hid):
     assert client.delete(f'/api/habits/{hid}').status_code == 404
+
+
+def test_list_includes_stats(client, monkeypatch):
+    monkeypatch.setattr('app.routes.today_manila', lambda: date(2026, 11, 26))
+    hid = post(client, {'name': 'A', 'weekly_target': 5}).json['id']
+    client.post(f'/api/habits/{hid}/toggle')
+    item = client.get('/api/habits').json[0]
+    assert item['streak'] == 1
+    assert item['week'] == {'count': 1, 'target': 5, 'percent': 20}
+
+
+def test_stats_from_stored_dates(client, conn, monkeypatch):
+    monkeypatch.setattr('app.routes.today_manila', lambda: date(2026, 11, 26))
+    hid = post(client, {'name': 'A', 'weekly_target': 3}).json['id']
+    for day in ('2026-11-26', '2026-11-25', '2026-11-24', '2026-11-22'):
+        conn.execute('INSERT INTO check_ins (habit_id, check_date) VALUES (%s, %s)', (hid, day))
+    other = post(client, {'name': 'B'}).json['id']
+    items = {h['id']: h for h in client.get('/api/habits').json}
+    assert items[hid]['streak'] == 3
+    assert items[hid]['week'] == {'count': 3, 'target': 3, 'percent': 100}
+    assert items[other]['streak'] == 0
+    assert items[other]['week'] == {'count': 0, 'target': 7, 'percent': 0}
