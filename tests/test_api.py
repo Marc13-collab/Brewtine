@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 
 
@@ -43,3 +45,45 @@ def test_list_200(client):
     post(client, {'name': 'Study'})
     r = client.get('/api/habits')
     assert r.status_code == 200 and [h['name'] for h in r.json] == ['Study']
+
+
+def test_toggle_on_then_off(client):
+    hid = post(client, {'name': 'A'}).json['id']
+    assert client.post(f'/api/habits/{hid}/toggle').json == {'checked': True}
+    assert client.get('/api/habits').json[0]['checked_today'] is True
+    assert client.post(f'/api/habits/{hid}/toggle').json == {'checked': False}
+    assert client.get('/api/habits').json[0]['checked_today'] is False
+
+
+def test_toggle_uses_manila_date(client, conn, monkeypatch):
+    monkeypatch.setattr('app.routes.today_manila', lambda: date(2026, 11, 27))
+    hid = post(client, {'name': 'A'}).json['id']
+    client.post(f'/api/habits/{hid}/toggle')
+    assert conn.execute('SELECT check_date FROM check_ins').fetchone()[0] == date(2026, 11, 27)
+
+
+def test_checked_today_follows_the_date(client, monkeypatch):
+    hid = post(client, {'name': 'A'}).json['id']
+    monkeypatch.setattr('app.routes.today_manila', lambda: date(2026, 11, 26))
+    client.post(f'/api/habits/{hid}/toggle')
+    assert client.get('/api/habits').json[0]['checked_today'] is True
+    monkeypatch.setattr('app.routes.today_manila', lambda: date(2026, 11, 27))
+    assert client.get('/api/habits').json[0]['checked_today'] is False
+
+
+@pytest.mark.parametrize('hid', ['999999', '99999999999'])
+def test_toggle_unknown_404(client, hid):
+    assert client.post(f'/api/habits/{hid}/toggle').status_code == 404
+
+
+def test_delete_204_and_cascades(client, conn):
+    hid = post(client, {'name': 'A'}).json['id']
+    client.post(f'/api/habits/{hid}/toggle')
+    assert client.delete(f'/api/habits/{hid}').status_code == 204
+    assert client.get('/api/habits').json == []
+    assert conn.execute('SELECT count(*) FROM check_ins').fetchone()[0] == 0
+
+
+@pytest.mark.parametrize('hid', ['999999', '99999999999'])
+def test_delete_unknown_404(client, hid):
+    assert client.delete(f'/api/habits/{hid}').status_code == 404

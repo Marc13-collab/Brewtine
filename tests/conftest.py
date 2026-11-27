@@ -1,5 +1,6 @@
 import os
 
+import psycopg
 import pytest
 
 from app import create_app
@@ -22,3 +23,10 @@ def client(test_url):
         init_schema(conn)
         conn.execute('TRUNCATE check_ins, habits RESTART IDENTITY CASCADE')
     return create_app(test_url).test_client()
+
+
+@pytest.fixture
+def conn(test_url, client):
+    """Plain connection to the test database, for checking what the API stored."""
+    with psycopg.connect(test_url, autocommit=True) as c:
+        yield c

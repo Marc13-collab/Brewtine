@@ -1,6 +1,7 @@
 from flask import Blueprint, current_app, jsonify, render_template, request
 
 from . import db
+from .clock import today_manila
 from .db import ping
 
 bp = Blueprint('main', __name__)
@@ -35,7 +36,7 @@ def index():
 @bp.get('/api/habits')
 def get_habits():
     with db.get_conn(_url()) as conn:
-        habits = db.list_habits(conn)
+        habits = db.list_habits(conn, today_manila())
     return jsonify(habits), 200
 
 
@@ -47,3 +48,22 @@ def create_habit():
     with db.get_conn(_url()) as conn:
         habit = db.insert_habit(conn, cleaned['name'], cleaned['weekly_target'])
     return jsonify(habit), 201
+
+
+# max=2147483647 keeps ids inside Postgres's integer range; larger ids are a plain 404.
+@bp.post('/api/habits/<int(max=2147483647):habit_id>/toggle')
+def toggle_habit(habit_id):
+    with db.get_conn(_url()) as conn:
+        checked = db.toggle_check_in(conn, habit_id, today_manila())
+    if checked is None:
+        return jsonify({'error': 'Habit not found.'}), 404
+    return jsonify({'checked': checked}), 200
+
+
+@bp.delete('/api/habits/<int(max=2147483647):habit_id>')
+def delete_habit(habit_id):
+    with db.get_conn(_url()) as conn:
+        deleted = db.delete_habit(conn, habit_id)
+    if not deleted:
+        return jsonify({'error': 'Habit not found.'}), 404
+    return '', 204
