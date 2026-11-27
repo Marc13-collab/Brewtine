@@ -109,3 +109,19 @@ def test_stats_from_stored_dates(client, conn, monkeypatch):
     assert items[hid]['week'] == {'count': 3, 'target': 3, 'percent': 100}
     assert items[other]['streak'] == 0
     assert items[other]['week'] == {'count': 0, 'target': 7, 'percent': 0}
+
+
+def test_list_has_strip_of_7(client):
+    post(client, {'name': 'A'})
+    item = client.get('/api/habits').json[0]
+    assert len(item['strip']) == 7
+    assert set(item['strip']) <= {'checked', 'missed', 'upcoming'}
+
+
+def test_strip_from_stored_dates(client, conn, monkeypatch):
+    monkeypatch.setattr('app.routes.today_manila', lambda: date(2026, 11, 26))
+    hid = post(client, {'name': 'A'}).json['id']
+    for day in ('2026-11-26', '2026-11-25', '2026-11-24', '2026-11-22'):
+        conn.execute('INSERT INTO check_ins (habit_id, check_date) VALUES (%s, %s)', (hid, day))
+    strip = client.get('/api/habits').json[0]['strip']
+    assert strip == ['missed', 'checked', 'checked', 'checked', 'upcoming', 'upcoming', 'upcoming']

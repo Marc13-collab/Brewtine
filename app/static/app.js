@@ -3,6 +3,7 @@
 const list = document.getElementById('habit-list');
 const form = document.getElementById('habit-form');
 const nameInput = document.getElementById('habit-name');
+const targetSelect = document.getElementById('weekly-target');
 const errorBox = document.getElementById('form-error');
 const emptyState = document.getElementById('empty-state');
 const loading = document.getElementById('loading');
@@ -41,6 +42,31 @@ async function api(path, options) {
   return body;
 }
 
+const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const STRIP_MARKS = { checked: '✓', missed: '✗', upcoming: '·' };
+
+function renderStrip(strip) {
+  const wrap = document.createElement('div');
+  wrap.className = 'strip';
+  wrap.setAttribute('role', 'group');
+  wrap.setAttribute('aria-label', 'This week');
+  strip.forEach((state, i) => {
+    const cell = document.createElement('span');
+    cell.className = `day ${state}`;
+    cell.setAttribute('role', 'img');
+    cell.setAttribute('aria-label', `${DAY_NAMES[i]}: ${state}`);
+    const label = document.createElement('span');
+    label.className = 'day-label';
+    label.textContent = DAY_NAMES[i][0];
+    const mark = document.createElement('span');
+    mark.className = 'day-mark';
+    mark.textContent = STRIP_MARKS[state];
+    cell.append(label, mark);
+    wrap.append(cell);
+  });
+  return wrap;
+}
+
 // Habit names are set with textContent, so any HTML typed in a name shows as plain text.
 function renderHabit(h) {
   const li = document.createElement('li');
@@ -70,7 +96,7 @@ function renderHabit(h) {
   stats.textContent =
     `Streak: ${h.streak} ${days} · This week: ${h.week.count}/${h.week.target} (${h.week.percent}%)`;
 
-  li.append(name, check, del, stats);
+  li.append(name, check, del, stats, renderStrip(h.strip));
   return li;
 }
 
@@ -86,13 +112,13 @@ async function loadHabits() {
   }
 }
 
-async function addHabit(name) {
+async function addHabit(name, weeklyTarget) {
   showError('');
   try {
     await api('/api/habits', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ name, weekly_target: weeklyTarget }),
     });
     nameInput.value = '';
     nameInput.focus();
@@ -125,7 +151,7 @@ async function deleteHabit(id) {
 
 form.addEventListener('submit', (event) => {
   event.preventDefault();
-  addHabit(nameInput.value);
+  addHabit(nameInput.value, Number(targetSelect.value));
 });
 
 loadHabits();

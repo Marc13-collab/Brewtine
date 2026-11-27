@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 
-from app.stats import compute_streak, week_bounds, week_progress
+from app.stats import compute_streak, week_bounds, week_progress, week_strip
 
 T = date(2026, 11, 26)  # a Thursday
 
@@ -62,3 +62,23 @@ def test_progress_ignores_last_week():
 
 def test_progress_floors():
     assert week_progress({T}, T, 7)['percent'] == 14
+
+
+def test_strip_mixed():
+    got = week_strip({date(2026, 11, 23), date(2026, 11, 25), T}, T)
+    assert got == ['checked', 'missed', 'checked', 'checked', 'upcoming', 'upcoming', 'upcoming']
+
+
+def test_strip_today_unchecked_is_upcoming():
+    got = week_strip({date(2026, 11, 23)}, T)
+    assert got == ['checked', 'missed', 'missed', 'upcoming', 'upcoming', 'upcoming', 'upcoming']
+
+
+def test_strip_on_monday_is_all_upcoming_until_checked():
+    monday = date(2026, 11, 30)
+    assert week_strip(set(), monday) == ['upcoming'] * 7
+    assert week_strip({monday}, monday)[0] == 'checked'
+
+
+def test_strip_ignores_last_week():
+    assert week_strip({date(2026, 11, 22)}, T)[0] == 'missed'

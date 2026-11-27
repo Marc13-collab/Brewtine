@@ -41,6 +41,7 @@ def get_habits():
         habit_dates = dates.get(habit['id'], set())
         habit['streak'] = stats.compute_streak(habit_dates, today)
         habit['week'] = stats.week_progress(habit_dates, today, habit['weekly_target'])
+        habit['strip'] = stats.week_strip(habit_dates, today)
     return jsonify(habits), 200
 
 

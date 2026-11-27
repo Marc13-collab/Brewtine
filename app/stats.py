@@ -27,3 +27,21 @@ def week_progress(check_dates, today, weekly_target):
         'target': weekly_target,
         'percent': min(100, count * 100 // weekly_target),
     }
+
+
+def week_strip(check_dates, today):
+    """Seven states, Monday to Sunday: 'checked', 'missed' (an earlier day, unchecked) or 'upcoming'.
+
+    Today unchecked counts as 'upcoming': the day is not over yet, so it cannot be missed.
+    """
+    monday, _ = week_bounds(today)
+    strip = []
+    for offset in range(7):
+        day = monday + timedelta(days=offset)
+        if day in check_dates:
+            strip.append('checked')
+        elif day < today:
+            strip.append('missed')
+        else:
+            strip.append('upcoming')
+    return strip

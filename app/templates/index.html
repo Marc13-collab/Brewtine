@@ -17,6 +17,16 @@
       <label for="habit-name" class="sr-only">Habit name</label>
       <input id="habit-name" type="text" maxlength="60" autocomplete="off"
              placeholder="New habit, e.g. Study 1 hour">
+      <label for="weekly-target" class="sr-only">Days per week</label>
+      <select id="weekly-target">
+        <option value="1">1 day a week</option>
+        <option value="2">2 days a week</option>
+        <option value="3">3 days a week</option>
+        <option value="4">4 days a week</option>
+        <option value="5">5 days a week</option>
+        <option value="6">6 days a week</option>
+        <option value="7" selected>7 days a week</option>
+      </select>
       <button type="submit">Add</button>
     </form>
     <p id="form-error" class="error" role="alert" hidden></p>
