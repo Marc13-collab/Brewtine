@@ -1,0 +1,27 @@
+digraph brewtine {
+  rankdir=LR;
+  bgcolor="#F5EBDD";
+  pad=0.4; nodesep=0.6; ranksep=1.1;
+  fontname="DejaVu Sans";
+  node [fontname="DejaVu Sans", fontsize=13, shape=box, style="rounded,filled", fillcolor="#FFF9F0", color="#6F4E37", fontcolor="#3B2A20", penwidth=1.6, margin="0.25,0.15"];
+  edge [fontname="DejaVu Sans", fontsize=11, color="#6F4E37", fontcolor="#3B2A20", penwidth=1.6];
+
+  browser [label="Client\nWeb browser\n(HTML, CSS, JavaScript)"];
+  github  [label="GitHub\npublic repo: brewtine"];
+
+  subgraph cluster_render {
+    label="Render (PaaS)\nplatform runs the servers, OS, runtime and HTTPS";
+    labeljust=l; fontsize=12; fontcolor="#3B2A20"; style="rounded,dashed"; color="#6F4E37"; penwidth=1.4;
+    app [label="Brewtine web service\nFlask + gunicorn\n(you manage: code and settings)", fillcolor="#FFF9F0"];
+  }
+
+  subgraph cluster_neon {
+    label="Neon (managed cloud database)\nprovider runs and maintains the database servers";
+    labeljust=l; fontsize=12; fontcolor="#3B2A20"; style="rounded,dashed"; color="#6F4E37"; penwidth=1.4;
+    db [label="PostgreSQL\ntables: habits, check_ins\n(you manage: your data)", fillcolor="#FFF9F0"];
+  }
+
+  browser -> app [label="HTTPS\npage and JSON API\n(GET, POST, DELETE)", dir=both];
+  app -> db      [label="SQL over TLS\nvia DATABASE_URL", dir=both];
+  github -> app  [label="auto-deploy\non git push", style=dashed, color="#5F7345", fontcolor="#5F7345"];
+}

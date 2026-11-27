@@ -1,0 +1,299 @@
+{
+  "info": {
+    "name": "Brewtine API",
+    "description": "IT 412 evidence: GET and POST endpoints with 200, 201, 400, plus toggle and delete. Set base_url to your live Render URL (no trailing slash). Run the requests in order.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 POST create habit (201)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/habits",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "habits"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"Study\", \"weekly_target\": 5}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 201 Created', () => pm.response.to.have.status(201));",
+              "const body = pm.response.json();",
+              "pm.test('Returns the new habit', () => pm.expect(body).to.include({ name: 'Study', weekly_target: 5 }));",
+              "pm.collectionVariables.set('habit_id', body.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 GET list habits (200)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/habits",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "habits"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+              "const id = Number(pm.collectionVariables.get('habit_id'));",
+              "pm.test('List contains the habit created in 01', () => pm.expect(pm.response.json().map(h => h.id)).to.include(id));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 POST blank name (400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/habits",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "habits"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"   \"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 400 Bad Request', () => pm.response.to.have.status(400));",
+              "pm.test('Explains the error', () => pm.expect(pm.response.json()).to.have.property('error'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 POST weekly_target 9 (400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/habits",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "habits"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"name\": \"Run\", \"weekly_target\": 9}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 400 Bad Request', () => pm.response.to.have.status(400));",
+              "pm.test('Explains the error', () => pm.expect(pm.response.json()).to.have.property('error'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 POST toggle today (200)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/habits/{{habit_id}}/toggle",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "habits",
+            "{{habit_id}}",
+            "toggle"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200 OK', () => pm.response.to.have.status(200));",
+              "pm.test('Habit is now checked', () => pm.expect(pm.response.json().checked).to.eql(true));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 POST toggle unknown id (404)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/habits/999999/toggle",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "habits",
+            "999999",
+            "toggle"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 404 Not Found', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 DELETE habit (204)",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/habits/{{habit_id}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "habits",
+            "{{habit_id}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 204 No Content', () => pm.response.to.have.status(204));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 DELETE unknown id (404)",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/api/habits/999999",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "habits",
+            "999999"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 404 Not Found', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://YOUR-SERVICE.onrender.com"
+    },
+    {
+      "key": "habit_id",
+      "value": ""
+    }
+  ]
+}
