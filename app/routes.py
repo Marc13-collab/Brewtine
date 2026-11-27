@@ -2,7 +2,6 @@ from flask import Blueprint, current_app, jsonify, render_template, request
 
 from . import db
 from .clock import today_manila
-from .db import ping
 
 bp = Blueprint('main', __name__)
 
@@ -29,8 +28,7 @@ def _url():
 
 @bp.get('/')
 def index():
-    db_ok = ping(_url())
-    return render_template('index.html', db_ok=db_ok)
+    return render_template('index.html')
 
 
 @bp.get('/api/habits')

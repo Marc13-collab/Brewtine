@@ -1,0 +1,27 @@
+/* Layout only. The Brewtine cafe theme arrives in Task 8. */
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+body { margin: 0; font-family: system-ui, sans-serif; line-height: 1.4; }
+main { max-width: 40rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+
+.top { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; }
+.top h1 { margin: 0; }
+.today { margin: 0; }
+
+#habit-form { display: flex; gap: 0.5rem; margin: 1rem 0 0.5rem; }
+#habit-name { flex: 1; min-width: 0; padding: 0.6rem 0.75rem; font: inherit; }
+button { font: inherit; padding: 0.6rem 0.9rem; cursor: pointer; }
+
+#habit-list { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; gap: 0.75rem; }
+.habit { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.75rem; border: 1px solid #ccc; border-radius: 0.5rem; }
+.habit-name { flex: 1 1 10rem; font-weight: 600; overflow-wrap: anywhere; }
+.habit.done .check { font-weight: 600; }
+
+.error { margin: 0.5rem 0 0; color: #b5543a; }
+.empty { color: #555; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}

@@ -4,10 +4,27 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Brewtine</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <h1>Brewtine</h1>
-  <p>Habit tracker, coming together.</p>
-  <footer>{% if db_ok %}database: connected{% else %}database: not connected{% endif %}</footer>
+  <main>
+    <header class="top">
+      <h1>Brewtine</h1>
+      <p id="today-label" class="today"></p>
+    </header>
+
+    <form id="habit-form" novalidate>
+      <label for="habit-name" class="sr-only">Habit name</label>
+      <input id="habit-name" type="text" maxlength="60" autocomplete="off"
+             placeholder="New habit, e.g. Study 1 hour">
+      <button type="submit">Add</button>
+    </form>
+    <p id="form-error" class="error" role="alert" hidden></p>
+
+    <p id="loading" class="empty">Loading your habits…</p>
+    <p id="empty-state" class="empty" hidden>Add your first habit to get started.</p>
+    <ul id="habit-list"></ul>
+  </main>
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
 </body>
 </html>
